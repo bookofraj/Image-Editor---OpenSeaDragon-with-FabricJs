@@ -1,25 +1,19 @@
-import logo from './logo.svg';
 import './App.css';
+import OpenSeaDragonMain from './componenets/openseadragonMain';
+
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+
+return (
+  <div className="app">
+
+      <OpenSeaDragonMain
+        image="https://kaapimachines.com/wp-content/uploads/2019/08/espresso-shot-and-coffee-beans-2021-08-27-19-35-18-utc.webp"
+        id='ocd-viewer'
+        type='legacy-image-pyramid'
+        />
+  </div>
+);
 }
 
 export default App;

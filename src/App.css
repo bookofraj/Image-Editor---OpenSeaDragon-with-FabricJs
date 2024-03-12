@@ -1,38 +1,98 @@
-.App {
+html,
+body,
+#container,
+.app {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.ocd-div,
+.ocd,
+.openseadragon {
+  padding: 10px;
+  width: 90vw;
+  height: 90vh;
+}
+
+.ocd-div {
+  position: relative;
+}
+
+
+.navigator-wrapper {
+  position: fixed;
+  left: 5px;
+  bottom: 5px;
+  background: #000;
+  overflow: hidden;
+  width: 166px;
+  height: 178px;
+  border: solid 0px #ffffff;
+  z-index: 3100
+}
+
+#navigator {
+  width: 166px;
+  height: 178px;
+  position: absolute;
+  top: 0;
+}
+
+#navigator-displayregion {
+  border-width: 1px !important;
+  border-color: #d53015 !important;
+  z-index: 4500 !important;
+  background: rgba(0, 0, 0, .2) !important;
+}
+
+.ocd-toolbar {
+  width: 30px;
+  display: block;
+  position: fixed;
+  top: 50%;
+  right: 10px;
+  list-style: none;
+  z-index: 110;
+  padding: 0;
+}
+
+.ocd-toolbar>li {
+  list-style: none
+}
+
+.ocd-toolbar a {
+  width: 30px;
+  height: 30px;
+  display: block !important;
+  background: rgba(0, 0, 0, .6);
+  color: #fff;
+  margin-bottom: 1px;
+  cursor: pointer;
   text-align: center;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.ocd-toolbar a:hover {
+  background: rgba(158, 46, 0, 0.6);
+  text-decoration: none
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+.ocd-toolbar a>i {
+  display: block;
+  text-align: center;
+  width: 30px;
+  height: 30px;
+  line-height: 30px;
+  font-size: 17px;
+  padding: 0 0 0 1px;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
-}
+/* endregion */
 
-.App-link {
-  color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.right-arrow-overlay {
+  border-radius: 0 50% 50% 0;
+  height: 50px;
+  width: 50px;
+  background-color: red;
 }
