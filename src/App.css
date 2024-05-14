@@ -51,7 +51,7 @@ body,
   width: 30px;
   display: block;
   position: fixed;
-  top: 50%;
+  top: 25%;
   right: 10px;
   list-style: none;
   z-index: 110;
@@ -77,8 +77,11 @@ body,
   background: rgba(158, 46, 0, 0.6);
   text-decoration: none
 }
+.ocd-toolbar a:active {
+  color: red;
+}
 
-.ocd-toolbar a>i {
+.ocd-toolbar a i {
   display: block;
   text-align: center;
   width: 30px;
@@ -88,6 +91,9 @@ body,
   padding: 0 0 0 1px;
 }
 
+.active-btn{
+  background-color: crimson;
+}
 /* endregion */
 
 .right-arrow-overlay {
