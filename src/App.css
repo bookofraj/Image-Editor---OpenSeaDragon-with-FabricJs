@@ -18,6 +18,7 @@ body,
 
 .ocd-div {
   position: relative;
+  transition: 0.5s;
 }
 
 
@@ -51,7 +52,7 @@ body,
   width: 30px;
   display: block;
   position: fixed;
-  top: 25%;
+  top: 10%;
   right: 10px;
   list-style: none;
   z-index: 110;
@@ -101,4 +102,17 @@ body,
   height: 50px;
   width: 50px;
   background-color: red;
+}
+
+.annotlist{
+  background-color: white;
+  color: black;
+  width: 200px;
+  height: auto;
+  padding: 5px 5px;
+  border: 2px solid black;
+  position: absolute;
+  top: 42%;
+  left: 79%;
+  z-index: 5;
 }
