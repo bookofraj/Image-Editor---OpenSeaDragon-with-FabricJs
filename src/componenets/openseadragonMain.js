@@ -13,7 +13,28 @@ function OpenSeaDragonMain(props) {
     const [showAnnotList,setShowAnnotList] = useState(false);
     const [canData,setCanData] = useState("");
     let shape;
+    let canvas;
+    let lastPage;
+    let tempFabricAnnots = {};
 
+    let slideCount = props.titledSourceArr.length;
+    for(let i = 0;i < slideCount;i++){
+        tempFabricAnnots[`fabricCanvas-${i}`] = "";
+    }
+    console.log("tempFabricAnnots = ",tempFabricAnnots);
+
+
+    function applyTempFabAnnots(page){
+        console.log("--applying tempFabricAnnots if available--");
+        if(tempFabricAnnots[`fabricCanvas-${page}`]){
+            console.log("tempFabricAnnots found for this page !");
+            let tempJSON = JSON.parse(tempFabricAnnots[`fabricCanvas-${page}`])
+            canvas.loadFromJSON(tempJSON);
+            console.log("tempFabricAnnots applied");
+        }else{
+            console.log("No tempFabricAnnots found for this page !");
+        }
+    }
     const onAddText = (event) => {
         console.log("------at onAddText------");
         shape = 'text';
@@ -35,11 +56,14 @@ function OpenSeaDragonMain(props) {
         drawShape(event);
     };
 
+
     const onAddLine = (event) => {
         console.log("-----at onAddLine------");
         shape = 'line';
         console.log("shape= ", shape);
-    };
+
+        drawShape(event);
+    }
 
     const onAddRectangle = (event) => {
         console.log("at onAddRectangle()");
@@ -84,7 +108,7 @@ function OpenSeaDragonMain(props) {
     // }
 
     let viewer = null;
-    let fabricOverlay;
+    var fabricOverlay;
 
     // const initSeadragon = useCallback(() => {
     //     // console.log("props: ", props);
@@ -166,12 +190,54 @@ function OpenSeaDragonMain(props) {
             initOSDFabricJS();
 
             initSeadragon();
-        }
+            
+            // eslint-disable-next-line
+            fabricOverlay = viewer.fabricOverlay({
+                fabricCanvasOptions: { 
+                    selection: false,
+                    width: window.innerWidth,
+                    height: window.innerHeight
+                },
+            });
 
+            initateOpenHandler();
+        }
+        
         // eslint-disable-next-line
     }, [initSeadragon, props]);
+    
+    let sequenceIndex;
+    const initateOpenHandler = (event) => {
+        viewer.addHandler('open',function whenNewImageOpens(event){
+            console.log("----at whenNewImageOpens(): open handle----");
+            
+            canvas = fabricOverlay.fabricCanvas();      
+            
+            // sequenceIndex = event.eventSource._sequenceIndex;
+            // console.log("opening image ",sequenceIndex);
+            console.log("viewer.currentPage() = ",viewer.currentPage());
+            let currentPage = viewer.currentPage();
 
-    useEffect((showAnnotList)=>console.log("showAnnotList = ",showAnnotList),[showAnnotList]);
+            applyTempFabAnnots(currentPage);
+        })
+    }
+useEffect(()=>{
+    console.log("trying to save annots temporarily");
+    tempFabricAnnots[`fabricCanvas-${sequenceIndex}`] = JSON.stringify(canvas);
+    console.log("tempFabricAnnots = ",tempFabricAnnots);
+    // eslint-disable-next-line
+},[canvas,sequenceIndex])
+
+    
+    useEffect((showAnnotList)=>{
+        console.log("showAnnotList = ",showAnnotList);
+    },[showAnnotList]);
+
+
+    setTimeout(() => {
+        // viewer.goToNextPage();
+        console.log("lastPage = ",lastPage);
+    }, 2000);
 
     function onAddFreeHand(event) {
         console.log("----at onAddFreeHand-----");
@@ -193,7 +259,7 @@ function OpenSeaDragonMain(props) {
 
     function toDeleteAll(){
         console.log("=====Canvas Cleared=====canvas.clear().renderAll()=====");
-        fabricOverlay.fabricCanvas().clear().renderAll();
+        canvas.clear().renderAll();
     }
 
     // using JSON Seralization to save annotations locally in the project!
@@ -230,11 +296,12 @@ function OpenSeaDragonMain(props) {
         // let shape;
         
         //just creating an instance to avoid long typing.
-        let canvas = fabricOverlay.fabricCanvas();      
+        canvas = fabricOverlay.fabricCanvas();      
 
-        //disabling mouse nav so as to draw annotation without moving image.
+        //disabling mouse nav & pan so as to draw annotation without moving image.
         viewer.panHorizontal = false;               
-        viewer.panVertical = false;                 
+        viewer.panVertical = false;
+        viewer.setMouseNavEnabled(false);
         console.log("PAN: ", viewer.panHorizontal, viewer.panVertical);
 
         console.log("----at drawShape----");
@@ -396,7 +463,7 @@ function OpenSeaDragonMain(props) {
 
                             points = [x, y, x, y];
                             lines.push(new fabric.Line(points, {
-                                strokeWidth: 1.5,
+                                strokeWidth: 7,
                                 selectable: false,
                                 stroke: 'green',
                                 left: x,
@@ -406,6 +473,9 @@ function OpenSeaDragonMain(props) {
 
                             canvas.add(lines[lineCounter]);
                             lineCounter++;
+                            break;
+                        case 'line':
+
                             break;
                     }
                 }, 100);
@@ -523,7 +593,7 @@ function OpenSeaDragonMain(props) {
 
             let polygon = new fabric.Polygon(roofPoints,{
                 stroke: 'red',
-                strokeWidth: 3,
+                strokeWidth: 7,
                 fill: false
             });
 
@@ -599,6 +669,39 @@ function OpenSeaDragonMain(props) {
         viewer.setMouseNavEnabled(true);
     }
 
+    function saveAnnotsTemporarily(page){
+        tempFabricAnnots[`fabricCanvas-${page}`] = JSON.stringify(canvas);
+        console.log("---tempFabricAnnots saved---> ",tempFabricAnnots);
+    }
+    function goToNextImage(){
+        let currentPage = viewer.currentPage();
+
+        console.log("--saving fabric objects temporarily--");
+        saveAnnotsTemporarily(currentPage);
+        console.log('--clearing fabric canvas--');
+        canvas.clear().renderAll();
+        
+        console.log('---going to ' + (currentPage + 1) + ' page from ' + currentPage + ' page---');
+        viewer.goToPage(currentPage + 1);
+
+        //after switching to new image will apply the temp annots from 
+        //viewer.addHandle('open',[function]); if an temp annots available
+    }
+    function goToPreviousImage(){
+        let currentPage = viewer.currentPage();
+
+        console.log("--saving fabric objects temporarily--");
+        saveAnnotsTemporarily(currentPage);
+        console.log('--clearing fabric canvas--');
+        canvas.clear().renderAll();
+
+        console.log('---going to ' + (currentPage - 1) + ' page from ' + currentPage + ' page---');
+        viewer.goToPage(currentPage - 1);
+
+        //after switching to new image will apply the temp annots from 
+        //viewer.addHandle('open',[function]); if an temp annots available
+    }
+
     return (
         <div className="ocd-div">
             <div className="navigator-wrapper c-shadow">
@@ -607,8 +710,8 @@ function OpenSeaDragonMain(props) {
             <div className="openseadragon" id={props.id}></div>
             {showAnnotList? <AnnotList canvasData={canData} /> : null}
             <ul className="ocd-toolbar">
-                <li><a href id="previous"><i className="fa fa-chevron-circle-left"></i></a></li>
-                <li><a href id="next"><i className="fa fa-chevron-circle-right"></i></a></li>
+                <li><a href id=""><i className="fa fa-chevron-circle-right" onClick={goToNextImage}></i></a></li>
+                <li><a href id=""><i className="fa fa-chevron-circle-left" onClick={goToPreviousImage}></i></a></li>
                 <li><a href id="save-png"><i className="fa fa-save" onClick={toSaveAnnotations}></i></a></li>
                 <li><a href id="delete-all"><i className="fa fa-trash" onClick={toDeleteAll}></i></a></li>
                 <li><a href id="apply-annotations"><i className="fa fa-object-ungroup" onClick={toApplyAnnotation}></i></a></li>
