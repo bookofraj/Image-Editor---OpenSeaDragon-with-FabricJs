@@ -1,20 +1,21 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import 'font-awesome/css/font-awesome.min.css';
 import OpenSeaDragon from 'openseadragon';
 import { initOSDFabricJS } from 'openseadragon-fabric';
 import { fabric } from 'fabric';
-import AnnotList from './AnnotList';
+// import AnnotList from './AnnotList';
 
 // import { FabricJSCanvas, useFabricJSEditor } from "fabricjs-react";
 
 
 function OpenSeaDragonMain(props) {
+    console.log("******* Rendering OpenSeaDragonMain *******");
 
-    const [showAnnotList,setShowAnnotList] = useState(false);
+    // const [showAnnotList,setShowAnnotList] = useState(false);
+    
     const [canData,setCanData] = useState("");
     let shape;
     let canvas;
-    let lastPage;
     let tempFabricAnnots = {};
 
     let slideCount = props.titledSourceArr.length;
@@ -62,6 +63,9 @@ function OpenSeaDragonMain(props) {
         shape = 'line';
         console.log("shape= ", shape);
 
+        canvas.isDrawingMode = false;
+        console.log("DrawingMode: ", fabricOverlay.fabricCanvas().isDrawingMode);
+
         drawShape(event);
     }
 
@@ -70,11 +74,11 @@ function OpenSeaDragonMain(props) {
         shape = 'rect';
         console.log("shape= ", shape);
         // viewer.setMouseNavEnabled(false);
-        viewer.mouseNavEnabled = false
+        // viewer.mouseNavEnabled = false
         console.log("MouseNav: ", viewer.mouseNavEnabled);
-        fabricOverlay.fabricCanvas().isDrawingMode = false;
-        console.log("DrawingMode: ", fabricOverlay.fabricCanvas().isDrawingMode);
-        console.log("fabric-> ", fabric);
+        canvas.isDrawingMode = false;
+        console.log("DrawingMode: ", canvas.isDrawingMode);
+        // console.log("fabric-> ", fabric);
 
         drawShape(event);
     };
@@ -84,14 +88,10 @@ function OpenSeaDragonMain(props) {
         shape = 'poly';
         console.log("shape= ",shape);
 
-        viewer.setMouseNavEnabled(false);
-        fabricOverlay.fabricCanvas().isDrawingMode = false;
+        viewer.mouseNavEnabled = false;
         console.log("mouseNavEnabled: ",viewer.mouseNavEnabled);
-        console.log("isDrawingMode: ",fabricOverlay.fabricCanvas().isDrawingMode);
-
-        console.log("viewer: ",viewer);
-        console.log("CANVAS fabricOverlay.fabricCanvas(): ",fabricOverlay.fabricCanvas());
-        console.log("fabric: ",fabric);
+        canvas.isDrawingMode = false;
+        console.log("isDrawingMode: ",canvas.isDrawingMode);
 
         drawShape(event);
     }
@@ -158,7 +158,7 @@ function OpenSeaDragonMain(props) {
     //     });
     // }, [props]);
 
-    const initSeadragon = useCallback(() => {
+    const initSeadragon = () => {
             console.log("props: ", props);
         // eslint-disable-next-line
         viewer = OpenSeaDragon({
@@ -181,7 +181,7 @@ function OpenSeaDragonMain(props) {
                         sequenceMode: true,
                         tileSources: props.titledSourceArr
                     });
-    },[props]);
+    };
 
     useEffect(() => {
         // console.log("I'm in child, viewer: ", viewer);
@@ -229,15 +229,10 @@ useEffect(()=>{
 },[canvas,sequenceIndex])
 
     
-    useEffect((showAnnotList)=>{
-        console.log("showAnnotList = ",showAnnotList);
-    },[showAnnotList]);
+    // useEffect((showAnnotList)=>{
+    //     console.log("showAnnotList = ",showAnnotList);
+    // },[showAnnotList]);
 
-
-    setTimeout(() => {
-        // viewer.goToNextPage();
-        console.log("lastPage = ",lastPage);
-    }, 2000);
 
     function onAddFreeHand(event) {
         console.log("----at onAddFreeHand-----");
@@ -251,8 +246,8 @@ useEffect(()=>{
 
 
         fabricOverlay.fabricCanvas().freeDrawingBrush = new fabric.PencilBrush(fabricOverlay.fabricCanvas());
-        fabricOverlay.fabricCanvas().freeDrawingBrush.width = 3;
-        fabricOverlay.fabricCanvas().freeDrawingBrush.color = "red";
+        fabricOverlay.fabricCanvas().freeDrawingBrush.width = 5;
+        fabricOverlay.fabricCanvas().freeDrawingBrush.color = "yellow";
 
         // drawShape(event);
     }
@@ -292,13 +287,13 @@ useEffect(()=>{
     }
 
     function drawShape(event) {
-        fabricOverlay.fabricCanvas().selection = false
-        // let shape;
-        
         //just creating an instance to avoid long typing.
         canvas = fabricOverlay.fabricCanvas();      
+        
+        // canvas.selection = false
+        // let shape;
 
-        //disabling mouse nav & pan so as to draw annotation without moving image.
+        // disabling mouse nav & pan so as to draw annotation without moving image.
         viewer.panHorizontal = false;               
         viewer.panVertical = false;
         viewer.setMouseNavEnabled(false);
@@ -306,7 +301,7 @@ useEffect(()=>{
 
         console.log("----at drawShape----");
         let origX, origY;
-        let rect, ellipse, text;
+        let rect, ellipse, text, line;
 
         // //used for shape = 'text'
         // let temp = 0;
@@ -319,7 +314,7 @@ useEffect(()=>{
         var roofPoints = [];
         let x, y;
         let lineCounter = 0;
-        let points, lines = [];
+        let polyLines = [];
 
         class Point{
             constructor(x,y){
@@ -336,13 +331,14 @@ useEffect(()=>{
         // console.log("event.nativeEvent.layerY: ", event.nativeEvent.layerY);
 
         console.log("viewer: ", viewer);
+        console.log("viewer.setMouseNavEnabled: ",viewer.setMouseNavEnabled);
         console.log("canvas: ", canvas);
         // let viewer = event.eventSource;
         // let options = {
         //     scale: viewer.tileSources.levels[0].width
         // };
 
-        if (isDown === false) {
+        // if (isDown === false) {
             canvas.on('mouse:down', function listeningMouseDown(event) {
                 isDown = true;
                 console.log("----at mouse:down-----");
@@ -360,7 +356,7 @@ useEffect(()=>{
                 imagePoint = viewer.viewport.viewportToImageCoordinates(viewportPoint);
 
                 //similar to case : rect
-                setTimeout(() => {
+                // setTimeout(() => {
 
                     // console.log("imagePoint: ",imagePoint);
                     // console.log('at mouse:down imagePoint.x:', imagePoint.x, " imagePoint.y:", imagePoint.y);
@@ -381,13 +377,11 @@ useEffect(()=>{
                                 transparentCorners: false,
                                 fill: 'transparent',
                                 stroke: 'yellow',
-                                strokeWidth: 2,
-                                objectCaching: false,
+                                strokeWidth: 7,
+                                // objectCaching: false,
                             });
-
-                            canvas.add(rect);
-
                             canvas.setActiveObject(rect);
+                            canvas.add(rect);
                             break;
                         case 'ellipse':
                             ellipse = new fabric.Ellipse({
@@ -397,9 +391,9 @@ useEffect(()=>{
                                 originY: 'top',
                                 rx: 1,
                                 ry: 1,
-                                stroke: 'green',
+                                stroke: 'yellow',
                                 fill: 'transparent',
-                                strokeWidth: 2,
+                                strokeWidth: 7,
                                 objectCaching: false,
                             });
                             canvas.add(ellipse);
@@ -407,12 +401,6 @@ useEffect(()=>{
                             canvas.setActiveObject(ellipse);
 
                             break;
-                        // case 'freehand':
-                        //     canvas.freeDrawingBrush = new fabric.PencilBrush(fabricOverlay.fabricCanvas());
-                        //     canvas.freeDrawingBrush.width = 3;
-                        //     canvas.freeDrawingBrush.color = "red";
-                            
-                        //     break;
                         case 'text':
                             origX = imagePoint.x;      //OrigX likewise
                             origY = imagePoint.y;      //OrigY likewise
@@ -430,7 +418,7 @@ useEffect(()=>{
                             });
                             canvas.add(text);
 
-                            canvas.setActiveObject(text);
+                            // canvas.setActiveObject(text);
                             break;
                         case 'poly':
                             if (!isDown) {
@@ -451,9 +439,9 @@ useEffect(()=>{
                             canvas.selection = false;
                             
                             console.log("-------Viewer at mouse:down Poly------");
-                            console.log("Viewer = ",viewer);
+                                console.log("Viewer = ",viewer);
                             console.log("-------CAnvas at mouse:down Poly------");
-                            console.log("Canvas = ",canvas);
+                                console.log("Canvas = ",canvas);
 
                             let x = imagePoint.x;
                             let y = imagePoint.y;
@@ -461,39 +449,44 @@ useEffect(()=>{
                             roofPoints.push(new Point(x, y));
                             console.log("roofPoints = ",roofPoints);
 
-                            points = [x, y, x, y];
-                            lines.push(new fabric.Line(points, {
+                            polyLines.push(new fabric.Line([x,y,x,y], {
                                 strokeWidth: 7,
                                 selectable: false,
-                                stroke: 'green',
+                                stroke: 'yellow',
                                 left: x,
                                 top: y
                             }));
 
 
-                            canvas.add(lines[lineCounter]);
+                            canvas.add(polyLines[lineCounter]);
                             lineCounter++;
                             break;
                         case 'line':
+                            line = new fabric.Line([imagePoint.x, imagePoint.y, imagePoint.x, imagePoint.y],{
+                                stroke: 'yellow',
+                                strokeWidth: 7
+                            });
 
+                            canvas.add(line);
+                            canvas.renderAll();
                             break;
                     }
-                }, 100);
+                // }, 100);
             });
-        }
+        // }
 
         canvas.on('mouse:move', function (event) {
 
             // viewer.setMouseNavEnabled(!isDown);
 
             let eventCoord = event;
-            console.log("----at mouse:move-----");
+            console.log("----at mouse:move----- isDown:",isDown);
 
             // console.log("isDown is still: ", isDown);
             // console.log("at mouse:move eventCoord: ",eventCoord);
 
             let viewportPoint, imagePoint;
-            setTimeout(() => {
+            // setTimeout(() => {
                 viewportPoint = viewer.viewport.pointFromPixel(new OpenSeaDragon.Point(eventCoord.pointer.x, eventCoord.pointer.y));
                 imagePoint = viewer.viewport.viewportToImageCoordinates(viewportPoint);
 
@@ -548,34 +541,57 @@ useEffect(()=>{
                         if (!isDown) {
                             return;
                         }
+                        console.log("== hi I am inside mouse:move poly ==");
                         // if(roofPoints[0] !== undefined){
                         //     line.set({
                         //         x2: imagePoint.x,
                         //         y2: imagePoint.y
                         //     });
                         // } 
-                        if(lines[0] !== undefined && lines[0] !== null){
+                        if(polyLines[0] !== undefined && polyLines[0] !== null){
                             x = imagePoint.x;
                             y = imagePoint.y;
 
-                            lines[lineCounter - 1].set({
+                            polyLines[lineCounter - 1].set({
                                 x2: x,
                                 y2: y
                             });
                             canvas.renderAll();
                         }
                         break;
+                    case 'line':
+                        if(isDown === true){
+                            line.set({
+                                x2: imagePoint.x,
+                                y2: imagePoint.y
+                            });
+
+                            canvas.renderAll();
+                        }
                 }
-            }, 100);
+            // }, 100);
         });
 
-        // canvas.on('mouse:up', function (event) {
-        //     isDown = false;
-        //     // rect = ellipse = undefined;
-        //     console.log('-----at mouse:up------');
-        //     console.log("isDown is now: ", isDown);
-        //     console.log('event: ', event);
-        // });
+        canvas.on('mouse:up', function (event) {
+            if(shape !== 'poly'){
+                isDown = false;
+                viewer.setMouseNavEnabled(true);
+
+                // canvas.off('mouse:down');
+                // canvas.off('mouse:move');
+                console.log('-----at mouse:up------');
+                console.log("isDown is now: ", isDown);
+                console.log('event: ', event);
+
+                // switch (shape) {
+                //     case 'rect':
+                //         break;
+                //     default:
+                //         break;
+                // }
+                // canvas.renderAll();
+            }
+        });
       
         canvas.on('mouse:dblclick', function(event) {
 
@@ -586,13 +602,13 @@ useEffect(()=>{
 
             console.log("============DBL CLICK===========");
 
-            if (lines.length > 0) {
-                lines.forEach(function (value, index, ar) {
+            if (polyLines.length > 0) {
+                polyLines.forEach(function (value, index, ar) {
                     canvas.remove(value);
                 });}
 
             let polygon = new fabric.Polygon(roofPoints,{
-                stroke: 'red',
+                stroke: 'yellow',
                 strokeWidth: 7,
                 fill: false
             });
@@ -601,11 +617,11 @@ useEffect(()=>{
             canvas.renderAll();
 
             roofPoints = [];
-            lines = [];
+            polyLines = [];
 
 
         canvas.selection = false;
-        canvas.setActiveObject(polygon);
+        // canvas.setActiveObject(polygon);
           });
 
         // function canvasRelease(){
@@ -634,25 +650,20 @@ useEffect(()=>{
 
     function handleAnnotList(){
 
-        // if(!fabricOverlay.fabricCanvas()) return;
-
-        // console.log("=X=X=X=- ERROR: NO ANNOTATION IS DRAWN -=X=X=X=");
-
-        setShowAnnotList(!showAnnotList);
-        if(showAnnotList) return;
-        let canvasData = JSON.stringify(fabricOverlay.fabricCanvas());
-        setCanData(canvasData);
+        // setShowAnnotList(!showAnnotList);
+        // if(showAnnotList) return;
+        setCanData(JSON.stringify(canvas));
         console.log("canData = ",canData);
-        console.log("showAnnotList = ",showAnnotList);
+        // console.log("showAnnotList = ",showAnnotList);
     }
 
     function deActiveAnnotation(viewer, canvas) {
-        if (shape !== 'freeHand') {
-            fabricOverlay.fabricCanvas().isDrawingMode = false;
+        // if (shape !== 'freeHand') {
+            canvas.isDrawingMode = false;
             viewer.setMouseNavEnabled(false);
             viewer.outerTracker.setTracking(false);
             canvas.isDrawingMode = false;
-        }
+        // }
         canvas.discardActiveObject();
         canvas.renderAll();
     }
@@ -701,6 +712,13 @@ useEffect(()=>{
         //after switching to new image will apply the temp annots from 
         //viewer.addHandle('open',[function]); if an temp annots available
     }
+    
+    // function deleteSingleAnnot(annot){
+    //     let canvas = fabricOverlay.fabricCanvas();
+    //     console.log("canvas @ deleteSingleAnnot : ",canvas);
+    //     // canvas.remove(annot);
+    //     console.log("deleted the annot = ",annot);
+    // }
 
     return (
         <div className="ocd-div">
@@ -708,7 +726,7 @@ useEffect(()=>{
                 <div id="navigator"></div>
             </div>
             <div className="openseadragon" id={props.id}></div>
-            {showAnnotList? <AnnotList canvasData={canData} /> : null}
+            {/* <AnnotList showAnnotList={showAnnotList} canvasData={canData} deleteSingleAnnot={deleteSingleAnnot}/> */}
             <ul className="ocd-toolbar">
                 <li><a href id=""><i className="fa fa-chevron-circle-right" onClick={goToNextImage}></i></a></li>
                 <li><a href id=""><i className="fa fa-chevron-circle-left" onClick={goToPreviousImage}></i></a></li>
@@ -718,7 +736,7 @@ useEffect(()=>{
                 <li><a href id='annot_list'><i className="fa fa-list" onClick={handleAnnotList}></i></a></li>
                 <li><a href id="zoom-in"><i className="fa fa-plus"></i></a></li>
                 <li><a href id="zoom-out"><i className="fa fa-minus"></i></a></li>
-                <li><a href id="reset"><i className="fa fa-refresh fa-spin"></i></a></li>
+                <li><a href id="reset"><i className="fa fa-refresh"></i></a></li>
                 <li><a href id="full-page"><i className="fa fa-expand"></i></a></li>
                 <li><a href id="add-freehand"><i className="fa fa-pencil" onClick={onAddFreeHand}></i></a></li>
                 <li><a href id='add-line'><i className="fa" onClick={onAddLine}>---</i></a></li>

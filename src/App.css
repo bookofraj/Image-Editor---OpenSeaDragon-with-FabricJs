@@ -104,7 +104,8 @@ body,
   background-color: red;
 }
 
-.annotlist{
+.annotlistShow{
+  opacity: 1;
   background-color: white;
   color: black;
   width: 200px;
@@ -115,4 +116,13 @@ body,
   top: 42%;
   left: 79%;
   z-index: 5;
+}
+.annotlistHide{
+  opacity: 0;
+  left: 200%;
+}
+
+.annot-icon{
+  float: right;
+  cursor: pointer;
 }
