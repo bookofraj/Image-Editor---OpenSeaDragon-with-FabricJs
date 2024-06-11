@@ -402,21 +402,18 @@ useEffect(()=>{
 
                             break;
                         case 'text':
-                            origX = imagePoint.x;      //OrigX likewise
-                            origY = imagePoint.y;      //OrigY likewise
-                            text = new fabric.Text('Add Text', {
+                            text = new fabric.IText('Add Text', {
                                 left: origX,
                                 top: origY,
-                                fontSize: 30,
+                                fontSize: 60,
                                 strokeWidth: 1,
-                                // lockMovementX: true,
-                                // lockMovementY: true,
-                                // hasControls: false,
-                                stroke: 'red',
-                                fill: 'red',
-                                editable: true 
+                                stroke: 'yellow',
+                                fill: 'yellow',
+                                editable: true
                             });
                             canvas.add(text);
+                            text.enterEditing();
+                            console.log("Explore itext methods: ",text);
 
                             // canvas.setActiveObject(text);
                             break;
