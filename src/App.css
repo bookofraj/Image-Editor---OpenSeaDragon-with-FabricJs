@@ -104,7 +104,28 @@ body,
   background-color: red;
 }
 
-.annotlistShow{
+.annotlist2{
+  background-color: white;
+  color: black;
+  width: 200px;
+  height: auto;
+  padding: 5px 5px;
+  border: 2px solid black;
+  position: absolute;
+  top: 35%;
+  right: -82px;
+  /* right: -42px; */
+  z-index: 5;
+}
+.annotlist2hide{
+  display: none;
+}
+
+#dynamicList li:hover{
+  background-color: lightblue;
+}
+
+/* .annotlistShow{
   opacity: 1;
   background-color: white;
   color: black;
@@ -120,9 +141,15 @@ body,
 .annotlistHide{
   opacity: 0;
   left: 200%;
-}
+} */
 
 .annot-icon{
   float: right;
+  cursor: pointer;
+  padding: 0 0.2rem;
+}
+#refresh-annotList{
+  float: right;
+  padding: 0 0.1rem;
   cursor: pointer;
 }

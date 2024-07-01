@@ -24,6 +24,11 @@ function OpenSeaDragonMain(props) {
     }
     console.log("tempFabricAnnots = ",tempFabricAnnots);
 
+    function generateRandomId() {
+        let randomId = Math.floor(Math.random()*10000);
+        console.log("Random Id generated = ",randomId);
+        return randomId;
+    }
 
     function applyTempFabAnnots(page){
         console.log("--applying tempFabricAnnots if available--");
@@ -159,7 +164,7 @@ function OpenSeaDragonMain(props) {
     // }, [props]);
 
     const initSeadragon = () => {
-            console.log("props: ", props);
+            // console.log("props: ", props);
         // eslint-disable-next-line
         viewer = OpenSeaDragon({
                         id: props.id,
@@ -272,6 +277,9 @@ useEffect(()=>{
     
     function toApplyAnnotation(){
         console.log("======Applying Saved Locally Annotations====(Serialisation)====");
+        // setTimeout(() => {
+        //     console.log("canvas.getObjects() = ",canvas.getObjects());
+        // }, 1000);
         
         var AvailableAnnots = JSON.parse(localStorage.getItem('savedAnnots'));
         
@@ -368,6 +376,7 @@ useEffect(()=>{
                     switch (shape) {
                         case 'rect':
                             rect = new fabric.Rect({
+                                id: generateRandomId(),
                                 left: imagePoint.x,
                                 top: imagePoint.y,
                                 originX: 'left',
@@ -385,6 +394,7 @@ useEffect(()=>{
                             break;
                         case 'ellipse':
                             ellipse = new fabric.Ellipse({
+                                id: generateRandomId(),
                                 left: imagePoint.x,
                                 top: imagePoint.y,
                                 originX: 'left',
@@ -403,6 +413,7 @@ useEffect(()=>{
                             break;
                         case 'text':
                             text = new fabric.IText('Add Text', {
+                                id: generateRandomId(),
                                 left: origX,
                                 top: origY,
                                 fontSize: 60,
@@ -460,6 +471,7 @@ useEffect(()=>{
                             break;
                         case 'line':
                             line = new fabric.Line([imagePoint.x, imagePoint.y, imagePoint.x, imagePoint.y],{
+                                id: generateRandomId(),
                                 stroke: 'yellow',
                                 strokeWidth: 7
                             });
@@ -605,6 +617,7 @@ useEffect(()=>{
                 });}
 
             let polygon = new fabric.Polygon(roofPoints,{
+                id: generateRandomId(),
                 stroke: 'yellow',
                 strokeWidth: 7,
                 fill: false
@@ -645,6 +658,7 @@ useEffect(()=>{
     //     // canvasRelease();
     // });
 
+    // eslint-disable-next-line
     function handleAnnotList(){
 
         // setShowAnnotList(!showAnnotList);
@@ -693,7 +707,7 @@ useEffect(()=>{
         viewer.goToPage(currentPage + 1);
 
         //after switching to new image will apply the temp annots from 
-        //viewer.addHandle('open',[function]); if an temp annots available
+        //viewer.addHandle('open',[function]); if any temp annots are available
     }
     function goToPreviousImage(){
         let currentPage = viewer.currentPage();
@@ -709,13 +723,112 @@ useEffect(()=>{
         //after switching to new image will apply the temp annots from 
         //viewer.addHandle('open',[function]); if an temp annots available
     }
+
+    function deleteSingleAnnot(annotId){
+        console.log("deleting Single Annot ",{annotId});
+        let presentCanvasObjArr = JSON.parse(JSON.stringify(canvas)).objects;
+        let updatedCanvasObjArr = presentCanvasObjArr.filter((element, index)=> index !== annotId )
+        console.log("convasObjects Array after deletion: ",updatedCanvasObjArr);
+
+        let updatedCanvas = JSON.parse(JSON.stringify(canvas));
+        updatedCanvas.objects = updatedCanvasObjArr;
+        console.log("updated canvas after deletion: ",updatedCanvas);
+        
+        canvas.loadFromJSON(updatedCanvas);
+        canvas.renderAll();
+
+        populateAnnotList();
+    }
+    function hideSingleAnnot(annotId){
+        console.log("hiding Single Annot ",{annotId});
+
+        let tempCanvasObj = JSON.parse(JSON.stringify(canvas));
+        tempCanvasObj.objects[annotId].visible = !tempCanvasObj.objects[annotId].visible;
+        console.log(`tempCanvasObj.objects[${annotId}].visible = `,tempCanvasObj.objects[annotId].visible);
+
+        canvas.loadFromJSON(tempCanvasObj);
+        canvas.renderAll();
+
+        populateAnnotList();
+    }
     
-    // function deleteSingleAnnot(annot){
-    //     let canvas = fabricOverlay.fabricCanvas();
-    //     console.log("canvas @ deleteSingleAnnot : ",canvas);
-    //     // canvas.remove(annot);
-    //     console.log("deleted the annot = ",annot);
-    // }
+    let showAnnotList = false;
+    let canvasObjArr;
+
+    function populateAnnotList(){
+        canvasObjArr = JSON.parse(JSON.stringify(canvas)).objects;
+        console.log("-- at populateAnnotList: canvasObjArr = ",canvasObjArr);
+
+        if(canvas !== undefined || canvasObjArr !== undefined){
+            let list = document.getElementById('dynamicList');
+
+            //clearing prevoiusly populated annot list
+            list.innerHTML = '';
+            
+            for(let i = 0; i < canvasObjArr.length;i++){
+                //setting shape name in list item
+                let li = document.createElement('li');
+                li.innerText = canvasObjArr[i].type.toUpperCase();
+
+                //giving list item an id
+                li.setAttribute("id",`Annot-${i}`);
+                
+                //setting hide icon
+                let hideButton = document.createElement('i');
+                hideButton.setAttribute('id',`hideAnnot-${i}`);
+                if(canvasObjArr[i].visible === true){
+                    hideButton.setAttribute('class','fa fa-eye annot-icon');
+                }else{
+                    hideButton.setAttribute('class','fa fa-eye-slash annot-icon');
+                }
+
+                //setting delete icon
+                let deleteButton = document.createElement('i');
+                deleteButton.setAttribute('id',`deleteAnnot-${i}`);
+                deleteButton.setAttribute('class','fa fa-trash-o annot-icon');
+                
+                li.appendChild(deleteButton);
+                li.appendChild(hideButton);
+                
+                list.appendChild(li);
+            }
+
+            for(let i = 0; i < canvasObjArr.length;i++){
+                // adding event listeners to delete buttons
+                let deleteButton = document.getElementById(`deleteAnnot-${i}`);
+                deleteButton.addEventListener('click',() => {
+                    deleteSingleAnnot(i);
+                })
+
+                // adding event listeners to delete buttons
+                let hideButton = document.getElementById(`hideAnnot-${i}`);
+                hideButton.addEventListener('click',() => {
+                    hideSingleAnnot(i);
+                })
+            }
+
+        }
+    }
+
+    function toggleAnnotList(){
+        showAnnotList = !showAnnotList;
+        // console.log("@ toggleAnnotList: showAnnotList = ",showAnnotList);
+        if(showAnnotList === true){
+            document.getElementById('annotlist2').classList.remove('annotlist2hide');
+            document.getElementById('annotlist2').classList.add('annotlist2');
+        }else{
+            document.getElementById('annotlist2').classList.remove('annotlist2');
+            document.getElementById('annotlist2').classList.add('annotlist2hide');
+        }
+        if(canvas !== undefined){
+            
+            populateAnnotList();
+            }
+    }
+    useEffect(()=>{
+        document.getElementById('annotlist2').classList.remove('annotlist2');
+        document.getElementById('annotlist2').classList.add('annotlist2hide');
+    },[]);
 
     return (
         <div className="ocd-div">
@@ -724,25 +837,50 @@ useEffect(()=>{
             </div>
             <div className="openseadragon" id={props.id}></div>
             {/* <AnnotList showAnnotList={showAnnotList} canvasData={canData} deleteSingleAnnot={deleteSingleAnnot}/> */}
+            <div className='annotlist2' id='annotlist2'>
+                <strong><i className="fa fa-list-ul"></i> Annotations <i className="fa fa-refresh" id='refresh-annotList' onClick={populateAnnotList}></i></strong>
+                <hr></hr>
+                <div><ol id='dynamicList'></ol></div>
+                {/* {populateAnnotList()} */}
+            </div>
             <ul className="ocd-toolbar">
+                {/* NEXT IMAGE BUTTON */}
                 <li><a href id=""><i className="fa fa-chevron-circle-right" onClick={goToNextImage}></i></a></li>
+                {/* PREVIOUS IMAGE BUTTON */}
                 <li><a href id=""><i className="fa fa-chevron-circle-left" onClick={goToPreviousImage}></i></a></li>
+                {/* SAVE LOCALLY BUTTON */}
                 <li><a href id="save-png"><i className="fa fa-save" onClick={toSaveAnnotations}></i></a></li>
+                {/* DELETE ALL BUTTONS */}
                 <li><a href id="delete-all"><i className="fa fa-trash" onClick={toDeleteAll}></i></a></li>
+                {/* APPLY LOCALLY SAVED ANNOTS BUTTON */}
                 <li><a href id="apply-annotations"><i className="fa fa-object-ungroup" onClick={toApplyAnnotation}></i></a></li>
-                <li><a href id='annot_list'><i className="fa fa-list" onClick={handleAnnotList}></i></a></li>
+                {/* ANNOTATION LIST BUTTON */}
+                {/* <li><a href id='annot_list'><i className="fa fa-list" onClick={handleAnnotList}></i></a></li> */}
+                <li><a href id='annot_list'><i className="fa fa-list" onClick={toggleAnnotList}></i></a></li>
+                {/* ZOOM IN BUTTON */}
                 <li><a href id="zoom-in"><i className="fa fa-plus"></i></a></li>
+                {/* ZOOM OUT BUTTON */}
                 <li><a href id="zoom-out"><i className="fa fa-minus"></i></a></li>
-                <li><a href id="reset"><i className="fa fa-refresh"></i></a></li>
+                {/* ZOOM RESET BUTTON */}
+                <li><a href id="reset"><i className='fa'><span className="material-symbols-outlined">recenter</span></i></a></li>
+                {/* FULL SCREEN BUTTON */}
                 <li><a href id="full-page"><i className="fa fa-expand"></i></a></li>
+                {/* DRAW PATH BUTTON */}
                 <li><a href id="add-freehand"><i className="fa fa-pencil" onClick={onAddFreeHand}></i></a></li>
+                {/* DRAW LINE BUTTON */}
                 <li><a href id='add-line'><i className="fa" onClick={onAddLine}>---</i></a></li>
+                {/* DRAW RECTANGLE BUTTON */}
                 <li><a href id='add-rect'><i className="fa fa-square-o" onClick={onAddRectangle}></i></a></li>
-                <li><a href id='add-rect'><i className="fa" onClick={onAddPolygon}>Poly</i></a></li>
+                {/* DRAW POLYGON BUTTON */}
+                <li><a href id='add-poly'><i className="fa" onClick={onAddPolygon}>Poly</i></a></li>
+                {/* DRAW CIRCLE BUTTON */}
                 <li><a href id='add-ellipse'><i className="fa fa-circle-thin" onClick={onAddEllipse}></i></a></li>
+                {/* TRIGGER DRAWSHAPE() BUTTON */}
                 <li><a href id='add-shape'><i className="fa fa-linux" onClick={drawShape}></i></a></li>
+                {/* ADD TEXT BUTTON */}
                 <li><a href id='add-text'><i className="fa fa-font fa-3x" onClick={onAddText}></i></a></li>
-                <li><a href id='earse'><i className="fa fa-arrows" onClick={enableMove}></i></a></li>
+                {/* enable move BUTTON */}
+                <li><a href id='enablemove'><i className="fa fa-arrows" onClick={enableMove}></i></a></li>
             </ul>
         </div>
     );
