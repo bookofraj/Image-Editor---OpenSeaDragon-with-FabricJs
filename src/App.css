@@ -125,24 +125,6 @@ body,
   background-color: lightblue;
 }
 
-/* .annotlistShow{
-  opacity: 1;
-  background-color: white;
-  color: black;
-  width: 200px;
-  height: auto;
-  padding: 5px 5px;
-  border: 2px solid black;
-  position: absolute;
-  top: 42%;
-  left: 79%;
-  z-index: 5;
-}
-.annotlistHide{
-  opacity: 0;
-  left: 200%;
-} */
-
 .annot-icon{
   float: right;
   cursor: pointer;
