@@ -3,6 +3,7 @@ import 'font-awesome/css/font-awesome.min.css';
 import OpenSeaDragon from 'openseadragon';
 import { initOSDFabricJS } from 'openseadragon-fabric';
 import { fabric } from 'fabric';
+import { Helmet } from 'react-helmet';
 // import AnnotList from './AnnotList';
 
 // import { FabricJSCanvas, useFabricJSEditor } from "fabricjs-react";
@@ -10,6 +11,10 @@ import { fabric } from 'fabric';
 
 function OpenSeaDragonMain(props) {
     console.log("******* Rendering OpenSeaDragonMain *******");
+    <Helmet>
+        <script src="./../scripts/heatmap.min.js"></script>
+        <script src="./../scripts/openseadragon-heatmapjs-overlay.js"></script>
+    </Helmet>
 
     // const [showAnnotList,setShowAnnotList] = useState(false);
     
@@ -165,7 +170,6 @@ function OpenSeaDragonMain(props) {
 
     const initSeadragon = () => {
             // console.log("props: ", props);
-        // eslint-disable-next-line
         viewer = OpenSeaDragon({
                         id: props.id,
                         visibilityRatio: 1.0,
@@ -830,6 +834,46 @@ useEffect(()=>{
         document.getElementById('annotlist2').classList.add('annotlist2hide');
     },[]);
 
+    function applyHeatmap() {
+    var heatmap = new HeatmapOverlay(viewer,
+            {
+              backgroundColor: 'rgba(0,0,0,0)',
+              // the maximum opacity (the value with the highest intensity will have it)
+              maxOpacity: 0.5,
+              // minimum opacity. any value > 0 will produce no transparent gradient transition
+              minOpacity: 0.05
+            }
+            );
+            // now generate some random data
+              var points = [];
+              var max = 0;
+              var width = 10000;
+              var height = 10000;
+              var len = 300;
+
+              while (len--) {
+                var val = Math.floor(Math.random()*100);
+                // now also with custom radius
+                var radius = Math.floor(Math.random()*70);
+
+                max = Math.max(max, val);
+                var point = {
+                  x: Math.floor(Math.random()*width),
+                  y: Math.floor(Math.random()*height),
+                  value: val,
+                  // radius configuration on point basis
+                  radius: radius
+                };
+                points.push(point);
+              }
+              // heatmap data format
+              var data = {
+                max: max,
+                data: points
+              };
+          heatmap.setData(data);
+    }
+
     return (
         <div className="ocd-div">
             <div className="navigator-wrapper c-shadow">
@@ -875,8 +919,8 @@ useEffect(()=>{
                 <li><a href id='add-poly'><i className="fa" onClick={onAddPolygon}>Poly</i></a></li>
                 {/* DRAW CIRCLE BUTTON */}
                 <li><a href id='add-ellipse'><i className="fa fa-circle-thin" onClick={onAddEllipse}></i></a></li>
-                {/* TRIGGER DRAWSHAPE() BUTTON */}
-                <li><a href id='add-shape'><i className="fa fa-linux" onClick={drawShape}></i></a></li>
+                {/* APPLY HEATMAP BUTTON */}
+                <li><a href id='add-shape'><i className="fa fa-map" onClick={applyHeatmap}></i></a></li>
                 {/* ADD TEXT BUTTON */}
                 <li><a href id='add-text'><i className="fa fa-font fa-3x" onClick={onAddText}></i></a></li>
                 {/* enable move BUTTON */}
