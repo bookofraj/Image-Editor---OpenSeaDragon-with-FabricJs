@@ -3,7 +3,8 @@ import 'font-awesome/css/font-awesome.min.css';
 import OpenSeaDragon from 'openseadragon';
 import { initOSDFabricJS } from 'openseadragon-fabric';
 import { fabric } from 'fabric';
-import { Helmet } from 'react-helmet';
+import h337 from 'heatmap.js';
+
 // import AnnotList from './AnnotList';
 
 // import { FabricJSCanvas, useFabricJSEditor } from "fabricjs-react";
@@ -11,10 +12,6 @@ import { Helmet } from 'react-helmet';
 
 function OpenSeaDragonMain(props) {
     console.log("******* Rendering OpenSeaDragonMain *******");
-    <Helmet>
-        <script src="./../scripts/heatmap.min.js"></script>
-        <script src="./../scripts/openseadragon-heatmapjs-overlay.js"></script>
-    </Helmet>
 
     // const [showAnnotList,setShowAnnotList] = useState(false);
     
@@ -228,6 +225,8 @@ function OpenSeaDragonMain(props) {
             let currentPage = viewer.currentPage();
 
             applyTempFabAnnots(currentPage);
+
+            // applyHeatmap();
         })
     }
 useEffect(()=>{
@@ -350,7 +349,7 @@ useEffect(()=>{
         //     scale: viewer.tileSources.levels[0].width
         // };
 
-        // if (isDown === false) {
+
             canvas.on('mouse:down', function listeningMouseDown(event) {
                 isDown = true;
                 console.log("----at mouse:down-----");
@@ -368,7 +367,7 @@ useEffect(()=>{
                 imagePoint = viewer.viewport.viewportToImageCoordinates(viewportPoint);
 
                 //similar to case : rect
-                // setTimeout(() => {
+
 
                     // console.log("imagePoint: ",imagePoint);
                     // console.log('at mouse:down imagePoint.x:', imagePoint.x, " imagePoint.y:", imagePoint.y);
@@ -395,6 +394,7 @@ useEffect(()=>{
                             });
                             canvas.setActiveObject(rect);
                             canvas.add(rect);
+                            console.log('added ',{rect});
                             break;
                         case 'ellipse':
                             ellipse = new fabric.Ellipse({
@@ -411,6 +411,7 @@ useEffect(()=>{
                                 objectCaching: false,
                             });
                             canvas.add(ellipse);
+                            console.log('added ',{ellipse});
 
                             canvas.setActiveObject(ellipse);
 
@@ -427,6 +428,7 @@ useEffect(()=>{
                                 editable: true
                             });
                             canvas.add(text);
+                            console.log('added ',{text});
                             text.enterEditing();
                             console.log("Explore itext methods: ",text);
 
@@ -436,18 +438,8 @@ useEffect(()=>{
                             if (!isDown) {
                                 return;
                             }
-                            // let newPoint = new Point(imagePoint.x,imagePoint.y);
-                            // roofPoints.push(newPoint);
-
-                            // line = new fabric.Line([newPoint.x,newPoint.y,newPoint.x,newPoint.y],{
-                            //     stroke: 'red',
-                            //     strokeWidth: 3
-                            // });
-                            // canvas.add(line);
-
-                            // console.log("roofPoints = ",roofPoints);
                             
-                            deActiveAnnotation(viewer, canvas);
+                            // deActiveAnnotation(viewer, canvas);
                             canvas.selection = false;
                             
                             console.log("-------Viewer at mouse:down Poly------");
@@ -481,12 +473,13 @@ useEffect(()=>{
                             });
 
                             canvas.add(line);
+                            console.log('added ',{line});
                             canvas.renderAll();
                             break;
                     }
-                // }, 100);
+
             });
-        // }
+
 
         canvas.on('mouse:move', function (event) {
 
@@ -499,7 +492,7 @@ useEffect(()=>{
             // console.log("at mouse:move eventCoord: ",eventCoord);
 
             let viewportPoint, imagePoint;
-            // setTimeout(() => {
+
                 viewportPoint = viewer.viewport.pointFromPixel(new OpenSeaDragon.Point(eventCoord.pointer.x, eventCoord.pointer.y));
                 imagePoint = viewer.viewport.viewportToImageCoordinates(viewportPoint);
 
@@ -555,12 +548,7 @@ useEffect(()=>{
                             return;
                         }
                         console.log("== hi I am inside mouse:move poly ==");
-                        // if(roofPoints[0] !== undefined){
-                        //     line.set({
-                        //         x2: imagePoint.x,
-                        //         y2: imagePoint.y
-                        //     });
-                        // } 
+
                         if(polyLines[0] !== undefined && polyLines[0] !== null){
                             x = imagePoint.x;
                             y = imagePoint.y;
@@ -582,7 +570,7 @@ useEffect(()=>{
                             canvas.renderAll();
                         }
                 }
-            // }, 100);
+
         });
 
         canvas.on('mouse:up', function (event) {
@@ -618,7 +606,8 @@ useEffect(()=>{
             if (polyLines.length > 0) {
                 polyLines.forEach(function (value, index, ar) {
                     canvas.remove(value);
-                });}
+                });
+            }
 
             let polygon = new fabric.Polygon(roofPoints,{
                 id: generateRandomId(),
@@ -628,13 +617,14 @@ useEffect(()=>{
             });
 
             canvas.add(polygon);
+            console.log('added ',{polygon});
             canvas.renderAll();
 
             roofPoints = [];
             polyLines = [];
 
 
-        canvas.selection = false;
+        // canvas.selection = false;
         // canvas.setActiveObject(polygon);
           });
 
@@ -672,16 +662,16 @@ useEffect(()=>{
         // console.log("showAnnotList = ",showAnnotList);
     }
 
-    function deActiveAnnotation(viewer, canvas) {
-        // if (shape !== 'freeHand') {
-            canvas.isDrawingMode = false;
-            viewer.setMouseNavEnabled(false);
-            viewer.outerTracker.setTracking(false);
-            canvas.isDrawingMode = false;
-        // }
-        canvas.discardActiveObject();
-        canvas.renderAll();
-    }
+    // function deActiveAnnotation(viewer, canvas) {
+    //     // if (shape !== 'freeHand') {
+    //         canvas.isDrawingMode = false;
+    //         viewer.setMouseNavEnabled(false);
+    //         viewer.outerTracker.setTracking(false);
+    //         canvas.isDrawingMode = false;
+    //     // }
+    //     canvas.discardActiveObject();
+    //     canvas.renderAll();
+    // }
 
 
     function enableMove() {
@@ -835,44 +825,198 @@ useEffect(()=>{
     },[]);
 
     function applyHeatmap() {
-    var heatmap = new HeatmapOverlay(viewer,
-            {
-              backgroundColor: 'rgba(0,0,0,0)',
-              // the maximum opacity (the value with the highest intensity will have it)
-              maxOpacity: 0.5,
-              // minimum opacity. any value > 0 will produce no transparent gradient transition
-              minOpacity: 0.05
-            }
-            );
-            // now generate some random data
-              var points = [];
-              var max = 0;
-              var width = 10000;
-              var height = 10000;
-              var len = 300;
+        console.log("HEATMAP- viewe: ",viewer);
+        let heatmap = new HeatmapOverlay(viewer,
+                        {
+                        backgroundColor: 'rgba(0,0,0,0)',
+                        // the maximum opacity (the value with the highest intensity will have it)
+                        maxOpacity: 0.5,
+                        // minimum opacity. any value > 0 will produce no transparent gradient transition
+                        minOpacity: 0.05
+                        }
+                        );
+                        // now generate some random data
+                        var points = [];
+                        var max = 0;
+                        var width = viewer.tileSources[viewer.currentPage()].levels[0].width;
+                        var height = viewer.tileSources[viewer.currentPage()].levels[0].height;
+                        var len = 300;
 
-              while (len--) {
-                var val = Math.floor(Math.random()*100);
-                // now also with custom radius
-                var radius = Math.floor(Math.random()*70);
+                        while (len--) {
+                            var val = Math.floor(Math.random()*100);
+                            // now also with custom radius
+                            var radius = Math.floor(Math.random()*70);
 
-                max = Math.max(max, val);
-                var point = {
-                  x: Math.floor(Math.random()*width),
-                  y: Math.floor(Math.random()*height),
-                  value: val,
-                  // radius configuration on point basis
-                  radius: radius
-                };
-                points.push(point);
-              }
-              // heatmap data format
-              var data = {
-                max: max,
-                data: points
-              };
-          heatmap.setData(data);
+                            max = Math.max(max, val);
+                            var point = {
+                            x: Math.floor(Math.random()*width),
+                            y: Math.floor(Math.random()*height),
+                            value: val,
+                            // radius configuration on point basis
+                            radius: radius
+                            };
+                            points.push(point);
+                        }
+                        // heatmap data format
+                        var data = {
+                            max: max,
+                            data: points
+                        };
+                    heatmap.setData(data);
+
     }
+
+//########################################################################################
+/*
+* heatmap.js openseadragon overlay
+*
+* Dual-licensed under the MIT (http://www.opensource.org/licenses/mit-license.php)
+* and the Beerware (http://en.wikipedia.org/wiki/Beerware) license.
+*/
+
+function HeatmapOverlay(viewer, cfg) {
+    // eslint-disable-next-line
+    var self = this;
+    this._viewer = viewer;
+    this.initialize(cfg || {});
+};
+
+// HeatmapOverlay.CSS_TRANSFORM = (function () {
+//     var div = document.createElement('div');
+//     var props = [
+//         'transform',
+//         'WebkitTransform',
+//         'MozTransform',
+//         'OTransform',
+//         'msTransform'
+//     ];
+
+//     for (var i = 0; i < props.length; i++) {
+//         var prop = props[i];
+//         if (div.style[prop] !== undefined) {
+//             return prop;
+//         }
+//     }
+//     return props[0];
+// })();
+
+HeatmapOverlay.prototype.initialize = function (cfg) {
+    this.cfg = cfg;
+
+    //var map = this.map = this.getMap();
+    
+    var container = this.container = document.createElement('div');
+    var width = this.width = this._viewer.container.clientWidth;
+    var height = this.height = this._viewer.container.clientHeight;
+
+    container.style.cssText = 'width:' + width + 'px;height:' + height + 'px;';
+
+    this.data = [];
+    this.max = 1;
+
+    cfg.container = container;
+
+    this.onAdd();
+};
+
+HeatmapOverlay.prototype.setData = function (data) {
+    this.max = data.max;
+
+    // transform data to latlngs
+    // eslint-disable-next-line
+    var data = data.data;
+    var len = data.length;
+    var d = [];
+
+    while (len--) {
+        var entry = data[len];
+        var dataObj = {};
+        dataObj.value = entry.value;
+        dataObj.x = entry.x;
+        dataObj.y = entry.y;
+        if (entry.radius) {
+            dataObj.radius = entry.radius;
+        }
+        d.push(dataObj);
+    }
+    this.data = d;
+    this.update();
+};
+
+HeatmapOverlay.prototype.update = function () {
+    var zoom = this._viewer.viewport.getZoom(true);
+
+    if (this.data.length === 0) {
+        return;
+    }
+
+    var generatedData = { max: this.max };
+    var points = [];
+    // iterate through data 
+    var len = this.data.length;
+    var localMax = 0;
+    // eslint-disable-next-line
+    var valueField = this.cfg.valueField;
+
+
+    while (len--) {
+        var entry = this.data[len];
+        var value = entry.value;
+
+        if (value > localMax) {
+            localMax = value;
+        }
+       
+        var viewportPoint  = this._viewer.viewport.imageToViewportCoordinates(entry.x, entry.y);
+        var imagePoint = this._viewer.viewport.pixelFromPoint(viewportPoint , true);
+		
+		//ignore outter point
+        if (imagePoint.x <= 0 || imagePoint.y <= 0 || imagePoint.x >= viewer.viewport.getContainerSize().x || imagePoint.y >= viewer.viewport.getContainerSize().y)
+            continue;
+
+        var point = { x: Math.round(imagePoint.x), y: Math.round(imagePoint.y), value : value };
+        
+        var radius;
+
+        if (entry.radius) {
+            radius = entry.radius * zoom;
+        } else {
+            radius = (this.cfg.radius || 20) * zoom;
+        }
+        point.radius = radius;
+        points.push(point);
+    }
+    if (this.cfg.useLocalExtrema) {
+        generatedData.max = localMax;
+    }
+
+    generatedData.data = points;
+
+    this.heatmap.setData(generatedData);
+
+};
+
+HeatmapOverlay.prototype.onAdd = function () {
+
+    this._viewer.canvas.appendChild(this.container);
+
+    this.changeHandler = this._viewer.addHandler('update-viewport', function (arg) {
+        arg.userData.draw.call(arg.userData);
+    }, this);
+
+    
+    if (!this.heatmap) {
+        this.heatmap = h337.create(this.cfg);
+    }
+    this.draw();
+};
+
+HeatmapOverlay.prototype.draw = function () {
+    if (!this._viewer) { return; }
+
+    this.update();
+};
+//########################################################################################
 
     return (
         <div className="ocd-div">
@@ -880,12 +1024,10 @@ useEffect(()=>{
                 <div id="navigator"></div>
             </div>
             <div className="openseadragon" id={props.id}></div>
-            {/* <AnnotList showAnnotList={showAnnotList} canvasData={canData} deleteSingleAnnot={deleteSingleAnnot}/> */}
             <div className='annotlist2' id='annotlist2'>
                 <strong><i className="fa fa-list-ul"></i> Annotations <i className="fa fa-refresh" id='refresh-annotList' onClick={populateAnnotList}></i></strong>
                 <hr></hr>
                 <div><ol id='dynamicList'></ol></div>
-                {/* {populateAnnotList()} */}
             </div>
             <ul className="ocd-toolbar">
                 {/* NEXT IMAGE BUTTON */}

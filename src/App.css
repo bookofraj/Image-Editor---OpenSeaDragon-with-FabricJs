@@ -113,8 +113,8 @@ body,
   border: 2px solid black;
   position: absolute;
   top: 35%;
-  right: -82px;
-  /* right: -42px; */
+  /* right: -82px; */
+  right: -42px;
   z-index: 5;
 }
 .annotlist2hide{
